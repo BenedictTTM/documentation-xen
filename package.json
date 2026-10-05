@@ -1,0 +1,18 @@
+{
+  "name": "xenchat-docs",
+  "version": "1.0.0",
+  "description": "Interactive documentation portal for XenChat",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve ."
+  },
+  "keywords": [
+    "documentation",
+    "xenchat",
+    "aspnet-core",
+    "webrtc",
+    "signalr"
+  ],
+  "author": "XenChat Team",
+  "license": "MIT"
+}

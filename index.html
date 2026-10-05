@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/x-icon" href="favicon.ico" />
+  <title>XenChat Docs — Real-Time Messaging Platform</title>
+  <meta name="description" content="Official documentation for XenChat — a modern real-time messaging, audio/video calling, and ephemeral status-sharing platform built with ASP.NET Core 8, SignalR, PostgreSQL, WebRTC, and Cloudinary." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    :root {
+      --bg-deep:#0f0f12; --bg-base:#18181b; --bg-surface:#23232a; --bg-elevated:#2a2a33;
+      --border:rgba(255,255,255,0.07); --border-strong:rgba(255,255,255,0.14);
+      --accent:#ee4c49; --accent-bright:#ff6b6b; --accent-dim:rgba(238,76,73,0.18); --accent-glow:rgba(238,76,73,0.35);
+      --text-primary:#f4f4f6; --text-secondary:#a8a8b3; --text-muted:#6b6b7a;
+      --success:#4ade80; --warning:#fbbf24; --info:#60a5fa;
+      --sidebar-w:280px; --header-h:64px;
+      --radius:12px; --radius-sm:8px;
+      --transition:0.22s cubic-bezier(.4,0,.2,1);
+      --font:'Poppins',system-ui,sans-serif;
+      --mono:'JetBrains Mono','Fira Code',monospace;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{font-family:var(--font);background:var(--bg-deep);color:var(--text-primary);line-height:1.7;overflow-x:hidden}
+    ::-webkit-scrollbar{width:6px;height:6px}
+    ::-webkit-scrollbar-track{background:var(--bg-base)}
+    ::-webkit-scrollbar-thumb{background:var(--bg-elevated);border-radius:99px}
+    ::-webkit-scrollbar-thumb:hover{background:var(--accent)}
+    ::selection{background:var(--accent-dim);color:var(--accent-bright)}
+
+    .bg-orbs{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+    .bg-orbs::before{content:'';position:absolute;width:600px;height:600px;top:-200px;left:-100px;background:radial-gradient(circle,rgba(238,76,73,0.12) 0%,transparent 70%);border-radius:50%;animation:orbFloat 20s ease-in-out infinite}
+    .bg-orbs::after{content:'';position:absolute;width:500px;height:500px;bottom:-150px;right:-100px;background:radial-gradient(circle,rgba(96,165,250,0.08) 0%,transparent 70%);border-radius:50%;animation:orbFloat 25s ease-in-out infinite reverse}
+    @keyframes orbFloat{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(30px,-20px) scale(1.05)}66%{transform:translate(-20px,30px) scale(0.95)}}
+
+    .top-bar{position:fixed;top:0;left:0;right:0;height:var(--header-h);z-index:100;display:flex;align-items:center;padding:0 24px;gap:16px;background:rgba(15,15,18,0.85);backdrop-filter:blur(20px) saturate(180%);border-bottom:1px solid var(--border)}
+    .top-bar__brand{display:flex;align-items:center;gap:10px;text-decoration:none;flex-shrink:0}
+    .top-bar__logo{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#ee4c49,#ff8c42);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;box-shadow:0 0 20px var(--accent-glow);flex-shrink:0;color:#fff}
+    .top-bar__name{font-size:1.1rem;font-weight:700;color:var(--text-primary);letter-spacing:-0.3px}
+    .top-bar__name span{color:var(--accent)}
+    .top-bar__badge{font-size:0.65rem;font-weight:600;background:var(--accent-dim);color:var(--accent-bright);border:1px solid rgba(238,76,73,0.3);padding:2px 8px;border-radius:99px;letter-spacing:0.5px;text-transform:uppercase}
+    .top-bar__search{flex:1;max-width:420px;margin-left:auto;position:relative}
+    .top-bar__search input{width:100%;background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 16px 8px 40px;color:var(--text-primary);font-family:var(--font);font-size:0.875rem;outline:none;transition:border-color var(--transition),box-shadow var(--transition)}
+    .top-bar__search input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-dim)}
+    .top-bar__search input::placeholder{color:var(--text-muted)}
+    .search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-muted);pointer-events:none}
+    .search-clear{position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--text-muted);cursor:pointer;display:none;background:none;border:none;font-size:1rem;padding:2px}
+    .search-clear:hover{color:var(--accent)}
+    .top-bar__links{display:flex;align-items:center;gap:8px;flex-shrink:0}
+    .top-bar__links a{color:var(--text-secondary);text-decoration:none;font-size:0.8rem;padding:6px 12px;border-radius:var(--radius-sm);transition:background var(--transition),color var(--transition);white-space:nowrap}
+    .top-bar__links a:hover{background:var(--bg-surface);color:var(--text-primary)}
+    .mobile-menu-btn{display:none;background:none;border:none;color:var(--text-primary);cursor:pointer;padding:6px;font-size:1.3rem}
+
+    .layout{display:flex;padding-top:var(--header-h);min-height:100vh;position:relative;z-index:1}
+
+    .sidebar{width:var(--sidebar-w);flex-shrink:0;position:fixed;top:var(--header-h);left:0;bottom:0;overflow-y:auto;overflow-x:hidden;background:rgba(15,15,18,0.6);backdrop-filter:blur(20px);border-right:1px solid var(--border);padding:24px 0 48px;transition:transform var(--transition);z-index:90}
+    .sidebar-group{margin-bottom:6px}
+    .sidebar-group-label{font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--text-muted);padding:12px 20px 6px}
+    .sidebar-link{display:flex;align-items:center;gap:10px;padding:9px 20px;color:var(--text-secondary);text-decoration:none;font-size:0.855rem;font-weight:400;border-left:2px solid transparent;transition:all var(--transition)}
+    .sidebar-link:hover{color:var(--text-primary);background:rgba(255,255,255,0.04)}
+    .sidebar-link.active{color:var(--accent-bright);font-weight:600;border-left-color:var(--accent);background:var(--accent-dim)}
+    .sidebar-link .icon{width:16px;text-align:center;flex-shrink:0;font-size:0.9rem}
+
+    .main{flex:1;margin-left:var(--sidebar-w);min-width:0;padding:56px 64px 120px}
+
+    .search-overlay{display:none;position:fixed;top:var(--header-h);left:var(--sidebar-w);right:0;bottom:0;background:rgba(15,15,18,0.96);z-index:80;padding:32px 64px;overflow-y:auto}
+    .search-overlay.visible{display:block}
+    .search-results-title{font-size:0.8rem;color:var(--text-muted);margin-bottom:16px;font-weight:500}
+    .search-result-item{background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;margin-bottom:10px;cursor:pointer;transition:border-color var(--transition),transform var(--transition)}
+    .search-result-item:hover{border-color:var(--accent);transform:translateX(4px)}
+    .search-result-item h4{font-size:0.9rem;color:var(--text-primary);margin-bottom:4px}
+    .search-result-item p{font-size:0.8rem;color:var(--text-secondary)}
+    mark{background:var(--accent-dim);color:var(--accent-bright);border-radius:2px;padding:0 2px}
+
+    .hero{text-align:center;padding:0 0 72px;position:relative}
+    .hero::after{content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:60%;height:1px;background:linear-gradient(90deg,transparent,var(--border-strong),transparent)}
+    .hero-badge{display:inline-flex;align-items:center;gap:6px;font-size:0.75rem;font-weight:600;color:var(--accent-bright);background:var(--accent-dim);border:1px solid rgba(238,76,73,0.3);border-radius:99px;padding:5px 14px;margin-bottom:24px;letter-spacing:0.3px}
+    .hero-badge::before{content:'';width:6px;height:6px;background:var(--accent-bright);border-radius:50%;animation:pulse 2s ease-in-out infinite}
+    @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(0.8)}}
+    .hero h1{font-size:clamp(2.4rem,5vw,3.4rem);font-weight:800;letter-spacing:-1.5px;line-height:1.15;margin-bottom:20px;background:linear-gradient(135deg,#f4f4f6 30%,#a8a8b3 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .hero h1 .accent{background:linear-gradient(135deg,#ee4c49,#ff8c42);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .hero p{font-size:1.05rem;color:var(--text-secondary);max-width:560px;margin:0 auto 36px;line-height:1.75}
+    .hero-pills{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-bottom:36px}
+    .pill{font-size:0.75rem;font-weight:500;background:var(--bg-elevated);border:1px solid var(--border-strong);color:var(--text-secondary);border-radius:99px;padding:5px 14px;transition:all var(--transition)}
+    .pill:hover{border-color:var(--accent);color:var(--accent-bright)}
+    .hero-cta{display:flex;justify-content:center;gap:12px;flex-wrap:wrap}
+    .btn-primary{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#ee4c49,#c0392b);color:#fff;font-family:var(--font);font-weight:600;font-size:0.9rem;text-decoration:none;padding:12px 26px;border-radius:var(--radius-sm);border:none;cursor:pointer;box-shadow:0 4px 20px rgba(238,76,73,0.4);transition:all var(--transition)}
+    .btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(238,76,73,0.5)}
+    .btn-secondary{display:inline-flex;align-items:center;gap:8px;background:var(--bg-elevated);color:var(--text-primary);font-family:var(--font);font-weight:500;font-size:0.9rem;text-decoration:none;padding:12px 26px;border-radius:var(--radius-sm);border:1px solid var(--border-strong);cursor:pointer;transition:all var(--transition)}
+    .btn-secondary:hover{border-color:var(--accent);color:var(--accent-bright);transform:translateY(-2px)}
+
+    .section{padding-top:64px;margin-bottom:8px}
+    .section-anchor{scroll-margin-top:calc(var(--header-h) + 24px)}
+    h2{font-size:1.75rem;font-weight:700;letter-spacing:-0.5px;color:var(--text-primary);margin-bottom:6px;display:flex;align-items:center;gap:12px}
+    h2 .h2-icon{width:36px;height:36px;border-radius:10px;background:var(--accent-dim);border:1px solid rgba(238,76,73,0.25);display:inline-flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+    h3{font-size:1.15rem;font-weight:600;color:var(--text-primary);margin:32px 0 12px}
+    h4{font-size:0.95rem;font-weight:600;color:var(--text-secondary);margin:20px 0 8px;text-transform:uppercase;letter-spacing:0.5px}
+    .section-divider{height:1px;background:linear-gradient(90deg,var(--border-strong),transparent);margin:8px 0 32px}
+    p{color:var(--text-secondary);margin-bottom:16px}
+    a{color:var(--accent-bright);text-decoration:none}
+    a:hover{text-decoration:underline}
+    strong{color:var(--text-primary);font-weight:600}
+    kbd{display:inline-block;background:var(--bg-elevated);border:1px solid var(--border-strong);border-radius:5px;padding:1px 6px;font-size:0.8em;font-family:var(--mono);color:var(--text-primary)}
+
+    .feature-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;margin:24px 0}
+    .feature-card{background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;transition:border-color var(--transition),transform var(--transition),box-shadow var(--transition);cursor:default}
+    .feature-card:hover{border-color:var(--accent);transform:translateY(-3px);box-shadow:0 8px 24px rgba(238,76,73,0.15)}
+    .feature-card .card-icon{font-size:1.6rem;margin-bottom:12px;display:block}
+    .feature-card h4{font-size:0.9rem;color:var(--text-primary);margin:0 0 6px;text-transform:none;letter-spacing:0}
+    .feature-card p{font-size:0.8rem;color:var(--text-muted);margin:0;line-height:1.6}
+
+    .tech-grid{display:flex;flex-wrap:wrap;gap:10px;margin:20px 0}
+    .tech-badge{display:inline-flex;align-items:center;gap:7px;background:var(--bg-elevated);border:1px solid var(--border-strong);border-radius:var(--radius-sm);padding:8px 14px;font-size:0.8rem;font-weight:500;color:var(--text-primary);transition:all var(--transition)}
+    .tech-badge:hover{border-color:var(--accent)}
+    .tech-badge .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+    .dot-purple{background:#a78bfa}.dot-blue{background:#60a5fa}.dot-green{background:#4ade80}
+    .dot-orange{background:#fb923c}.dot-pink{background:#f472b6}.dot-yellow{background:#fbbf24}
+    .dot-red{background:#ee4c49}.dot-teal{background:#2dd4bf}
+
+    .code-wrapper{position:relative;margin:16px 0;border-radius:var(--radius);overflow:hidden;border:1px solid var(--border-strong)}
+    .code-header{display:flex;align-items:center;justify-content:space-between;background:#1a1a22;padding:8px 16px;border-bottom:1px solid var(--border)}
+    .code-lang{font-size:0.7rem;font-weight:600;color:var(--accent-bright);text-transform:uppercase;letter-spacing:1px}
+    .copy-btn{display:flex;align-items:center;gap:5px;background:var(--bg-elevated);border:1px solid var(--border);border-radius:6px;color:var(--text-muted);font-family:var(--font);font-size:0.72rem;font-weight:500;padding:4px 10px;cursor:pointer;transition:all var(--transition)}
+    .copy-btn:hover{color:var(--text-primary);border-color:var(--accent)}
+    .copy-btn.copied{color:var(--success);border-color:var(--success)}
+    pre[class*="language-"]{margin:0!important;border-radius:0!important;background:#13131a!important;font-size:0.82rem!important;font-family:var(--mono)!important;line-height:1.65!important;padding:20px!important}
+    code[class*="language-"]{font-family:var(--mono)!important}
+    code:not([class*="language-"]){font-family:var(--mono);font-size:0.83em;background:var(--bg-elevated);color:var(--accent-bright);border:1px solid var(--border);border-radius:5px;padding:1px 6px}
+
+    .table-wrapper{overflow-x:auto;margin:20px 0;border-radius:var(--radius);border:1px solid var(--border)}
+    table{width:100%;border-collapse:collapse;font-size:0.84rem;min-width:500px}
+    thead{background:#1e1e26}
+    th{padding:12px 16px;text-align:left;font-size:0.72rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.8px;border-bottom:1px solid var(--border-strong)}
+    td{padding:11px 16px;color:var(--text-secondary);border-bottom:1px solid var(--border);vertical-align:top}
+    td:first-child{color:var(--text-primary);font-family:var(--mono);font-size:0.8rem}
+    tr:last-child td{border-bottom:none}
+    tr:hover td{background:rgba(255,255,255,0.02)}
+    .method-badge{display:inline-block;font-size:0.65rem;font-weight:700;border-radius:4px;padding:2px 7px;font-family:var(--mono);letter-spacing:0.5px}
+    .method-get{background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.3)}
+    .method-post{background:rgba(96,165,250,0.15);color:#60a5fa;border:1px solid rgba(96,165,250,0.3)}
+
+    .callout{display:flex;gap:14px;border-radius:var(--radius);padding:16px 20px;margin:20px 0;border-left:3px solid}
+    .callout-icon{font-size:1.1rem;flex-shrink:0;margin-top:1px}
+    .callout-body{flex:1}
+    .callout-body strong{display:block;margin-bottom:4px;font-size:0.9rem}
+    .callout-body p{font-size:0.84rem;margin:0}
+    .callout-info{background:rgba(96,165,250,0.08);border-color:#60a5fa}
+    .callout-info .callout-icon,.callout-info .callout-body strong{color:#93c5fd}
+    .callout-warning{background:rgba(251,191,36,0.08);border-color:#fbbf24}
+    .callout-warning .callout-icon,.callout-warning .callout-body strong{color:#fcd34d}
+    .callout-success{background:rgba(74,222,128,0.08);border-color:#4ade80}
+    .callout-success .callout-icon,.callout-success .callout-body strong{color:#86efac}
+    .callout-danger{background:rgba(238,76,73,0.08);border-color:#ee4c49}
+    .callout-danger .callout-icon,.callout-danger .callout-body strong{color:var(--accent-bright)}
+
+    .diagram-wrapper{background:#13131a;border:1px solid var(--border-strong);border-radius:var(--radius);padding:32px 24px;margin:20px 0;overflow-x:auto;text-align:center}
+
+    .step-list{counter-reset:steps;list-style:none;margin:20px 0}
+    .step-list li{counter-increment:steps;display:flex;align-items:flex-start;gap:16px;padding:16px 20px;background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:10px;transition:border-color var(--transition)}
+    .step-list li:hover{border-color:var(--accent)}
+    .step-list li::before{content:counter(steps);flex-shrink:0;width:28px;height:28px;background:linear-gradient(135deg,#ee4c49,#c0392b);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.78rem;font-weight:700}
+    .step-list li > div{flex:1}
+    .step-list li strong{color:var(--text-primary);display:block;margin-bottom:4px}
+    .step-list li p{font-size:0.84rem;margin:0;color:var(--text-muted)}
+
+    .env-grid{display:flex;flex-direction:column;gap:10px;margin:20px 0}
+    .env-item{background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 18px;display:flex;align-items:flex-start;gap:14px;transition:border-color var(--transition)}
+    .env-item:hover{border-color:var(--border-strong)}
+    .env-key{font-family:var(--mono);font-size:0.8rem;color:var(--accent-bright);white-space:nowrap;min-width:220px}
+    .env-desc{font-size:0.82rem;color:var(--text-muted)}
+    .env-required{font-size:0.65rem;font-weight:700;background:rgba(238,76,73,0.15);color:var(--accent);border:1px solid rgba(238,76,73,0.3);border-radius:4px;padding:1px 6px;margin-left:auto;flex-shrink:0}
+    .env-optional{font-size:0.65rem;font-weight:700;background:rgba(96,165,250,0.12);color:var(--info);border:1px solid rgba(96,165,250,0.25);border-radius:4px;padding:1px 6px;margin-left:auto;flex-shrink:0}
+
+    #back-top{position:fixed;bottom:32px;right:32px;z-index:200;width:44px;height:44px;background:linear-gradient(135deg,#ee4c49,#c0392b);color:#fff;border:none;cursor:pointer;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;box-shadow:0 4px 20px rgba(238,76,73,0.5);opacity:0;transform:translateY(16px);transition:all var(--transition)}
+    #back-top.visible{opacity:1;transform:translateY(0)}
+    #back-top:hover{transform:translateY(-3px) !important}
+    .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:85;backdrop-filter:blur(4px)}
+    #read-progress{position:fixed;top:var(--header-h);left:0;right:0;height:2px;z-index:110;background:linear-gradient(90deg,#ee4c49,#ff8c42);transform-origin:left;transform:scaleX(0);transition:transform 0.1s}
+    .fade-in{opacity:0;transform:translateY(18px);transition:opacity 0.55s ease,transform 0.55s ease}
+    .fade-in.visible{opacity:1;transform:translateY(0)}
+
+    @media(max-width:1024px){.main{padding:48px 40px 100px}}
+    @media(max-width:768px){
+      :root{--sidebar-w:260px}
+      .sidebar{transform:translateX(-100%)}
+      .sidebar.open{transform:translateX(0)}
+      .sidebar-overlay.open{display:block}
+      .main{margin-left:0;padding:32px 24px 100px}
+      .mobile-menu-btn{display:flex}
+      .top-bar__links{display:none}
+      .top-bar__search{max-width:200px}
+      .search-overlay{left:0;padding:20px 24px}
+      .feature-grid{grid-template-columns:1fr}
+      h2{font-size:1.4rem}
+      .env-item{flex-direction:column}
+      .env-key{min-width:auto}
+      #back-top{bottom:20px;right:20px}
+    }
+    @media(max-width:480px){.top-bar__search{display:none}.hero h1{font-size:1.9rem}}
+  </style>
+</head>
+<body>
+<div class="bg-orbs"></div>
+<div id="read-progress"></div>
+
+<header class="top-bar">
+  <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Open menu">&#9776;</button>
+  <a href="#overview" class="top-bar__brand">
+    <div class="top-bar__logo">&#9889;</div>
+    <span class="top-bar__name"><span>Xen</span>Chat</span>
+  </a>
+  <span class="top-bar__badge">v1.0 Docs</span>
+  <div class="top-bar__search">
+    <svg class="search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input type="text" id="search-input" placeholder="Search docs&#8230; (Ctrl+K)" autocomplete="off" />
+    <button class="search-clear" id="search-clear">&#10005;</button>
+  </div>
+  <nav class="top-bar__links">
+    <a href="#getting-started">Quick Start</a>
+    <a href="#api-reference">API Ref</a>
+    <a href="#docker">Docker</a>
+  </nav>
+</header>
+
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<div class="layout">
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-group">
+    <div class="sidebar-group-label">Introduction</div>
+    <a href="#overview" class="sidebar-link active"><span class="icon">&#127775;</span>Overview</a>
+    <a href="#architecture" class="sidebar-link"><span class="icon">&#127963;</span>Architecture</a>
+    <a href="#tech-stack" class="sidebar-link"><span class="icon">&#128295;</span>Technology Stack</a>
+    <a href="#project-structure" class="sidebar-link"><span class="icon">&#128193;</span>Project Structure</a>
+  </div>
+  <div class="sidebar-group">
+    <div class="sidebar-group-label">Data Layer</div>
+    <a href="#data-models" class="sidebar-link"><span class="icon">&#128452;</span>Data Models</a>
+  </div>
+  <div class="sidebar-group">
+    <div class="sidebar-group-label">Core Features</div>
+    <a href="#auth" class="sidebar-link"><span class="icon">&#128272;</span>Authentication &amp; OTP</a>
+    <a href="#messaging" class="sidebar-link"><span class="icon">&#128172;</span>Real-Time Messaging</a>
+    <a href="#webrtc" class="sidebar-link"><span class="icon">&#128249;</span>WebRTC Calling</a>
+    <a href="#statuses" class="sidebar-link"><span class="icon">&#9203;</span>Ephemeral Statuses</a>
+    <a href="#favorites" class="sidebar-link"><span class="icon">&#11088;</span>Favorites</a>
+    <a href="#profiles" class="sidebar-link"><span class="icon">&#128100;</span>Profiles &amp; CDN</a>
+  </div>
+  <div class="sidebar-group">
+    <div class="sidebar-group-label">API Reference</div>
+    <a href="#api-reference" class="sidebar-link"><span class="icon">&#128225;</span>HTTP Endpoints</a>
+    <a href="#signalr" class="sidebar-link"><span class="icon">&#9889;</span>SignalR Hub</a>
+  </div>
+  <div class="sidebar-group">
+    <div class="sidebar-group-label">Deployment</div>
+    <a href="#configuration" class="sidebar-link"><span class="icon">&#9881;</span>Configuration</a>
+    <a href="#getting-started" class="sidebar-link"><span class="icon">&#128640;</span>Getting Started</a>
+    <a href="#docker" class="sidebar-link"><span class="icon">&#128051;</span>Docker</a>
+  </div>
+</aside>
+
+<main class="main" id="main-content">
+  <div class="search-overlay" id="search-overlay">
+    <p class="search-results-title" id="search-results-title"></p>
+    <div id="search-results-list"></div>
+  </div>
+
+  <!-- HERO -->
+  <section class="hero fade-in" id="overview">
+    <div class="hero-badge">ASP.NET Core 8 &middot; SignalR &middot; WebRTC &middot; PostgreSQL</div>
+    <h1><span class="accent">XenChat</span> Documentation</h1>
+    <p>A full-featured, real-time web communication platform &mdash; instant messaging, peer-to-peer audio/video calls, 24-hour ephemeral statuses, and secure OTP-verified accounts.</p>
+    <div class="hero-pills">
+      <span class="pill">&#128172; Real-Time Messaging</span>
+      <span class="pill">&#128249; WebRTC Calling</span>
+      <span class="pill">&#9203; Ephemeral Stories</span>
+      <span class="pill">&#128272; OTP Auth</span>
+      <span class="pill">&#9729;&#65039; Cloudinary CDN</span>
+      <span class="pill">&#128051; Docker Ready</span>
+      <span class="pill">&#128273; Google OAuth</span>
+    </div>
+    <div class="hero-cta">
+      <a href="#getting-started" class="btn-primary">&#128640; Quick Start</a>
+      <a href="#api-reference" class="btn-secondary">&#128225; API Reference</a>
+    </div>
+  </section>
+
+  <!-- ARCHITECTURE -->
+  <section class="section section-anchor fade-in" id="architecture">
+    <h2><span class="h2-icon">&#127963;</span>Architecture &amp; System Flow</h2>
+    <div class="section-divider"></div>
+    <p>XenChat follows the <strong>ASP.NET Core MVC</strong> pattern. The browser communicates over standard HTTP for page rendering, uses <strong>WebSockets (SignalR)</strong> for real-time events, and establishes direct <strong>WebRTC peer-to-peer media streams</strong> for audio/video calls.</p>
+    <div class="diagram-wrapper">
+      <div class="mermaid">
+flowchart TD
+    Client["Web Browser - HTML5 + Vanilla JS"]
+    subgraph Server["ASP.NET Core 8 Server"]
+        Controllers["MVC Controllers - Account / Home / Chat"]
+        Hub["SignalR Hub - /chatHub"]
+        Services["Services - User / Message / Email / Cloudinary"]
+        EF["Entity Framework Core"]
+    end
+    subgraph External["External Services"]
+        PG[("PostgreSQL - Neon/Cloud")]
+        CDN[("Cloudinary Media CDN")]
+        SMTP["SMTP - MailKit"]
+        Peer["Remote Browser - WebRTC Peer"]
+    end
+    Client -->|HTTP + Razor Views| Controllers
+    Client -->|WebSocket| Hub
+    Client <-->|P2P Media Stream| Peer
+    Controllers --> Services
+    Hub --> Services
+    Services --> EF
+    EF --> PG
+    Services -->|Avatars + Statuses| CDN
+    Services -->|6-digit OTP| SMTP
+    Hub -.->|SDP + ICE Candidates| Client
+    style Server fill:#1e1e26,stroke:#3a3a4a,color:#f4f4f6
+    style External fill:#1a1a22,stroke:#3a3a4a,color:#f4f4f6
+      </div>
+    </div>
+    <div class="callout callout-info">
+      <span class="callout-icon">&#8505;&#65039;</span>
+      <div class="callout-body">
+        <strong>Signaling vs. Media</strong>
+        <p>SignalR is used <em>only</em> as a signaling channel (SDP + ICE) for WebRTC call setup. Actual audio/video travels directly peer-to-peer, bypassing the server entirely.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- TECH STACK -->
+  <section class="section section-anchor fade-in" id="tech-stack">
+    <h2><span class="h2-icon">&#128295;</span>Technology Stack</h2>
+    <div class="section-divider"></div>
+    <h3>Backend</h3>
+    <div class="tech-grid">
+      <div class="tech-badge"><span class="dot dot-purple"></span>.NET 8 / C# 12</div>
+      <div class="tech-badge"><span class="dot dot-blue"></span>ASP.NET Core MVC</div>
+      <div class="tech-badge"><span class="dot dot-green"></span>Entity Framework Core 8</div>
+      <div class="tech-badge"><span class="dot dot-teal"></span>Npgsql PostgreSQL</div>
+      <div class="tech-badge"><span class="dot dot-orange"></span>ASP.NET Core SignalR</div>
+      <div class="tech-badge"><span class="dot dot-yellow"></span>CloudinaryDotNet v1.26.2</div>
+      <div class="tech-badge"><span class="dot dot-pink"></span>MailKit v4.18.1</div>
+      <div class="tech-badge"><span class="dot dot-red"></span>JWT Bearer Auth</div>
+    </div>
+    <h3>Frontend</h3>
+    <div class="tech-grid">
+      <div class="tech-badge"><span class="dot dot-orange"></span>Razor Views (.cshtml)</div>
+      <div class="tech-badge"><span class="dot dot-blue"></span>Vanilla CSS3 (Dark UI)</div>
+      <div class="tech-badge"><span class="dot dot-yellow"></span>ES6+ JavaScript</div>
+      <div class="tech-badge"><span class="dot dot-purple"></span>@microsoft/signalr JS Client</div>
+      <div class="tech-badge"><span class="dot dot-green"></span>WebRTC Native API</div>
+      <div class="tech-badge"><span class="dot dot-pink"></span>Google Fonts &mdash; Poppins</div>
+    </div>
+    <h3>Infrastructure</h3>
+    <div class="tech-grid">
+      <div class="tech-badge"><span class="dot dot-blue"></span>Docker (Multi-stage)</div>
+      <div class="tech-badge"><span class="dot dot-teal"></span>PostgreSQL (Neon/Cloud)</div>
+      <div class="tech-badge"><span class="dot dot-orange"></span>Cloudinary CDN</div>
+      <div class="tech-badge"><span class="dot dot-green"></span>Render / Railway / Fly.io</div>
+      <div class="tech-badge"><span class="dot dot-red"></span>Google OAuth 2.0</div>
+    </div>
+  </section>
+
+  <!-- PROJECT STRUCTURE -->
+  <section class="section section-anchor fade-in" id="project-structure">
+    <h2><span class="h2-icon">&#128193;</span>Project Structure</h2>
+    <div class="section-divider"></div>
+    <div class="code-wrapper">
+      <div class="code-header"><span class="code-lang">Directory Tree</span><button class="copy-btn" data-target="code-tree">&#8974; Copy</button></div>
+      <pre class="language-none" id="code-tree"><code class="language-none">XenChat/
+&#9500;&#9472;&#9472; Controllers/
+&#9474;   &#9500;&#9472;&#9472; AccountController.cs   &#8592; Auth: Login, Signup, OTP, Google OAuth
+&#9474;   &#9500;&#9472;&#9472; HomeController.cs      &#8592; Dashboard, statuses, profile, favorites
+&#9474;   &#9492;&#9472;&#9472; ChatController.cs      &#8592; Conversation, send/delete messages, images
+&#9500;&#9472;&#9472; Data/
+&#9474;   &#9492;&#9472;&#9472; XenChatDbContext.cs    &#8592; EF Core context + seed data
+&#9500;&#9472;&#9472; Hubs/
+&#9474;   &#9492;&#9472;&#9472; ChatHub.cs             &#8592; SignalR: presence, messaging, WebRTC signaling
+&#9500;&#9472;&#9472; Models/
+&#9474;   &#9500;&#9472;&#9472; User.cs, Message.cs, Status.cs, Favorite.cs
+&#9474;   &#9492;&#9472;&#9472; PendingSignup.cs, ErrorViewModel.cs
+&#9500;&#9472;&#9472; Services/
+&#9474;   &#9500;&#9472;&#9472; UserService.cs         &#8592; Auth, JWT, password hashing
+&#9474;   &#9500;&#9472;&#9472; MessageService.cs      &#8592; Conversation history, read receipts
+&#9474;   &#9500;&#9472;&#9472; EmailService.cs        &#8592; MailKit SMTP OTP delivery
+&#9474;   &#9500;&#9472;&#9472; CloudinaryService.cs   &#8592; Upload/delete media
+&#9474;   &#9492;&#9472;&#9472; PendingSignupStore.cs  &#8592; Thread-safe OTP cache
+&#9500;&#9472;&#9472; Views/
+&#9474;   &#9500;&#9472;&#9472; Account/               &#8592; Login, Signup, Verify, AccountCreated
+&#9474;   &#9500;&#9472;&#9472; Chat/                  &#8592; Conversation + WebRTC modals
+&#9474;   &#9500;&#9472;&#9472; Home/                  &#8592; Index, Updates, AddStatus, Profile
+&#9474;   &#9492;&#9472;&#9472; Shared/                &#8592; Layout, Error
+&#9500;&#9472;&#9472; wwwroot/css/site.css       &#8592; Global design system
+&#9500;&#9472;&#9472; .env                       &#8592; Secrets (never commit)
+&#9500;&#9472;&#9472; appsettings.json           &#8592; SMTP, Logging, JWT
+&#9500;&#9472;&#9472; Dockerfile                 &#8592; Multi-stage production build
+&#9492;&#9472;&#9472; Program.cs                 &#8592; Bootstrap, DI, DB initialization</code></pre>
+    </div>
+  </section>
+
+  <!-- DATA MODELS -->
+  <section class="section section-anchor fade-in" id="data-models">
+    <h2><span class="h2-icon">&#128452;</span>Data Models &amp; Schema</h2>
+    <div class="section-divider"></div>
+    <p>The database is auto-initialized on first startup via raw SQL in <code>Program.cs</code>. No manual migrations required.</p>
+    <div class="callout callout-success">
+      <span class="callout-icon">&#9989;</span>
+      <div class="callout-body">
+        <strong>Auto-Seed on First Run</strong>
+        <p>Default test accounts (<code>caleb</code>, <code>arnold</code>, <code>francis</code>, <code>joana</code>&#8230;) are seeded automatically. Default password: <code>password123</code>.</p>
+      </div>
+    </div>
+    <h3>Users Table</h3>
+    <div class="table-wrapper"><table>
+      <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>Id</td><td>SERIAL</td><td>PRIMARY KEY</td><td>Unique user identifier</td></tr>
+        <tr><td>Username</td><td>TEXT</td><td>NOT NULL</td><td>Display username</td></tr>
+        <tr><td>Email</td><td>TEXT</td><td>NOT NULL UNIQUE</td><td>Unique email address</td></tr>
+        <tr><td>Password</td><td>TEXT</td><td>NOT NULL</td><td>PBKDF2 salted hash via PasswordHasher</td></tr>
+        <tr><td>ProfileInfo</td><td>TEXT</td><td>NULL</td><td>User biography or status note</td></tr>
+        <tr><td>Avatar</td><td>TEXT</td><td>NULL</td><td>Avatar filename or Cloudinary HTTPS URL</td></tr>
+      </tbody>
+    </table></div>
+    <h3>Messages Table</h3>
+    <div class="table-wrapper"><table>
+      <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>MessageId</td><td>SERIAL</td><td>PRIMARY KEY</td><td>Auto-incrementing message ID</td></tr>
+        <tr><td>SenderId</td><td>INTEGER</td><td>NOT NULL</td><td>FK &rarr; Users.Id</td></tr>
+        <tr><td>ReceiverId</td><td>INTEGER</td><td>NOT NULL</td><td>FK &rarr; Users.Id</td></tr>
+        <tr><td>Content</td><td>TEXT</td><td>NOT NULL</td><td>Text or <code>[img]URL[/img]Caption</code></td></tr>
+        <tr><td>Timestamp</td><td>TIMESTAMPTZ</td><td>NOT NULL</td><td>Message time (UTC)</td></tr>
+        <tr><td>IsRead</td><td>BOOLEAN</td><td>DEFAULT FALSE</td><td>Read receipt flag</td></tr>
+      </tbody>
+    </table></div>
+    <h3>Statuses Table</h3>
+    <div class="table-wrapper"><table>
+      <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>Id</td><td>SERIAL</td><td>PRIMARY KEY</td><td>Status identifier</td></tr>
+        <tr><td>UserId</td><td>INTEGER</td><td>NOT NULL</td><td>User who created the status</td></tr>
+        <tr><td>Username</td><td>TEXT</td><td>NOT NULL</td><td>Cached author name</td></tr>
+        <tr><td>UserAvatar</td><td>TEXT</td><td>NULL</td><td>Cached author avatar URL</td></tr>
+        <tr><td>MediaUrl</td><td>TEXT</td><td>NOT NULL</td><td>Cloudinary hosted image URL</td></tr>
+        <tr><td>Caption</td><td>TEXT</td><td>NULL</td><td>Optional text caption</td></tr>
+        <tr><td>CreatedAt</td><td>TIMESTAMPTZ</td><td>NOT NULL</td><td>Filtered when &gt; 24 hours old</td></tr>
+      </tbody>
+    </table></div>
+    <h3>Favorites Table</h3>
+    <div class="table-wrapper"><table>
+      <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>Id</td><td>SERIAL</td><td>PRIMARY KEY</td><td>Favorite record ID</td></tr>
+        <tr><td>UserId</td><td>INTEGER</td><td>NOT NULL</td><td>User who pinned the favorite</td></tr>
+        <tr><td>FavoriteUserId</td><td>INTEGER</td><td>NOT NULL</td><td>Target favorited contact</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <!-- AUTH -->
+  <section class="section section-anchor fade-in" id="auth">
+    <h2><span class="h2-icon">&#128272;</span>Authentication &amp; OTP Verification</h2>
+    <div class="section-divider"></div>
+    <div class="feature-grid">
+      <div class="feature-card"><span class="card-icon">&#128231;</span><h4>Two-Step Registration</h4><p>6-digit OTP sent via MailKit SMTP with 5-minute expiry in a thread-safe in-memory store.</p></div>
+      <div class="feature-card"><span class="card-icon">&#127850;</span><h4>Cookie Sessions</h4><p>Standard MVC navigation uses ASP.NET Core session cookies with idle timeout.</p></div>
+      <div class="feature-card"><span class="card-icon">&#128273;</span><h4>JWT Bearer</h4><p>AJAX and SignalR connections authenticate with JWT tokens generated on login.</p></div>
+      <div class="feature-card"><span class="card-icon">&#127760;</span><h4>Google OAuth 2.0</h4><p>One-click sign-in with auto-provisioning, profile sync, and Render-compatible callback URL.</p></div>
+    </div>
+    <h3>Registration Flow</h3>
+    <ol class="step-list">
+      <li><div><strong>Submit Registration Form</strong><p>User provides username, email, password at <code>/Account/Signup</code>.</p></div></li>
+      <li><div><strong>OTP Generated &amp; Cached</strong><p>A 6-digit code stored in <code>PendingSignupStore</code> with 5-minute TTL.</p></div></li>
+      <li><div><strong>Email Dispatched</strong><p>HTML email with OTP sent via MailKit SMTP (<code>EmailService</code>).</p></div></li>
+      <li><div><strong>OTP Verified</strong><p>User submits code at <code>/Account/Verify</code>. Account committed with PBKDF2-hashed password.</p></div></li>
+    </ol>
+  </section>
+
+  <!-- MESSAGING -->
+  <section class="section section-anchor fade-in" id="messaging">
+    <h2><span class="h2-icon">&#128172;</span>Real-Time Messaging</h2>
+    <div class="section-divider"></div>
+    <div class="feature-grid">
+      <div class="feature-card"><span class="card-icon">&#9889;</span><h4>Instant Delivery</h4><p>Messages persisted to PostgreSQL then immediately broadcast via <code>ChatHub.SendMessage</code>.</p></div>
+      <div class="feature-card"><span class="card-icon">&#128247;</span><h4>Media Messages</h4><p>Images use <code>[img]URL[/img]Caption</code> syntax, rendering with click-to-enlarge lightbox.</p></div>
+      <div class="feature-card"><span class="card-icon">&#128465;&#65039;</span><h4>Message Deletion</h4><p>Senders delete their own messages; SignalR notifies both peers to remove the DOM node.</p></div>
+      <div class="feature-card"><span class="card-icon">&#9989;</span><h4>Read Receipts</h4><p>Opening a conversation auto-marks all incoming messages as <code>IsRead = true</code>.</p></div>
+    </div>
+  </section>
+
+  <!-- WEBRTC -->
+  <section class="section section-anchor fade-in" id="webrtc">
+    <h2><span class="h2-icon">&#128249;</span>WebRTC Audio &amp; Video Calling</h2>
+    <div class="section-divider"></div>
+    <p>Direct P2P media via the browser's <strong>RTCPeerConnection</strong> API using Google STUN (<code>stun:stun.l.google.com:19302</code>). SignalR acts purely as the signaling channel.</p>
+    <h3>Call Lifecycle</h3>
+    <div class="table-wrapper"><table>
+      <thead><tr><th>Step</th><th>SignalR Method</th><th>Direction</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td>1. Initiate</td><td><code>CallUser</code></td><td>Caller &rarr; Callee</td><td>Triggers incoming call popup + ringtone</td></tr>
+        <tr><td>2. Answer</td><td><code>AnswerCall</code></td><td>Callee &rarr; Caller</td><td>Accepts or declines the call</td></tr>
+        <tr><td>3. SDP Offer</td><td><code>SendCallOffer</code></td><td>Caller &rarr; Callee</td><td>Exchanges WebRTC SDP session description</td></tr>
+        <tr><td>4. SDP Answer</td><td><code>SendCallAnswer</code></td><td>Callee &rarr; Caller</td><td>Completes WebRTC handshake</td></tr>
+        <tr><td>5. ICE Relay</td><td><code>SendIceCandidate</code></td><td>Both &harr;</td><td>Relays ICE network candidates</td></tr>
+        <tr><td>6. Terminate</td><td><code>EndCall</code></td><td>Either &rarr; Both</td><td>Closes media tracks and resets UI</td></tr>
+      </tbody>
+    </table></div>
+    <div class="callout callout-warning">
+      <span class="callout-icon">&#9888;&#65039;</span>
+      <div class="callout-body">
+        <strong>STUN Only &mdash; No TURN Server</strong>
+        <p>Calls may fail when both peers are behind symmetric NAT. For production, configure a TURN server (e.g., Twilio Network Traversal or coturn).</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATUSES -->
+  <section class="section section-anchor fade-in" id="statuses">
+    <h2><span class="h2-icon">&#9203;</span>24-Hour Ephemeral Statuses</h2>
+    <div class="section-divider"></div>
+    <p>Inspired by WhatsApp Stories &mdash; users post visual updates that expire after 24 hours. Images stored on Cloudinary under <code>xenchat/status</code> with auto-format and auto-quality.</p>
+    <div class="feature-grid">
+      <div class="feature-card"><span class="card-icon">&#128228;</span><h4>Upload</h4><p>Post at <code>/Home/AddStatus</code> with optional caption, delivered directly to Cloudinary CDN.</p></div>
+      <div class="feature-card"><span class="card-icon">&#127904;</span><h4>Carousel View</h4><p><code>/Home/Updates</code> filters <code>CreatedAt &ge; NOW() - 24h</code> and renders a story carousel.</p></div>
+      <div class="feature-card"><span class="card-icon">&#128253;</span><h4>Story Viewer</h4><p>Clicking any status opens a full-screen interactive modal with caption overlay.</p></div>
+    </div>
+  </section>
+
+  <!-- FAVORITES -->
+  <section class="section section-anchor fade-in" id="favorites">
+    <h2><span class="h2-icon">&#11088;</span>Favorites &amp; Contact Management</h2>
+    <div class="section-divider"></div>
+    <div class="feature-grid">
+      <div class="feature-card"><span class="card-icon">&#11088;</span><h4>Star Contacts</h4><p>Toggle favorites from contacts list or chat header via <code>POST /Home/ToggleFavorite</code>.</p></div>
+      <div class="feature-card"><span class="card-icon">&#128193;</span><h4>Filter Tabs</h4><p>Switch between <strong>All Chats</strong>, <strong>Groups</strong>, <strong>Unread</strong>, and <strong>Favorites</strong>.</p></div>
+      <div class="feature-card"><span class="card-icon">&#128269;</span><h4>Fast Search</h4><p>Client-side search with global shortcut <kbd>Ctrl+K</kbd> / <kbd>&#8984;K</kbd>.</p></div>
+    </div>
+  </section>
+
+  <!-- PROFILES -->
+  <section class="section section-anchor fade-in" id="profiles">
+    <h2><span class="h2-icon">&#128100;</span>User Profiles &amp; Cloudinary CDN</h2>
+    <div class="section-divider"></div>
+    <p>Dedicated profile view at <code>/Home/Profile</code>. Users update display name, bio, and avatar. New avatars (JPG, PNG, GIF, WebP) upload to Cloudinary under <code>xenchat/avatars</code> and are delivered via CDN with responsive fallbacks.</p>
+  </section>
+
+  <!-- API REFERENCE -->
+  <section class="section section-anchor fade-in" id="api-reference">
+    <h2><span class="h2-icon">&#128225;</span>HTTP API Reference</h2>
+    <div class="section-divider"></div>
+    <h3>Account Endpoints</h3>
+    <div class="table-wrapper"><table>
+      <thead><tr><th>Method</th><th>Endpoint</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><span class="method-badge method-get">GET</span></td><td>/Account/Login</td><td>Render login page</td></tr>
+        <tr><td><span class="method-badge method-post">POST</span></td><td>/Account/Login</td><td>Authenticate credentials (JSON or form)</td></tr>
+        <tr><td><span class="method-badge method-get">GET</span></td><td>/Account/Signup</td><td>Render signup page</td></tr>
+        <tr><td><span class="method-badge method-post">POST</span></td><td>/Account/Signup</td><td>Register user &amp; dispatch OTP</td></tr>
+        <tr><td><span class="method-badge method-get">GET</span></td><td>/Account/Verify</td><td>Render OTP verification form</td></tr>
+        <tr><td><span class="method-badge method-post">POST</span></td><td>/Account/Verify</td><td>Validate OTP &amp; create user record</td></tr>
+        <tr><td><span class="method-badge method-post">POST</span></td><td>/Account/ResendCode</td><td>Re-generate &amp; re-send OTP email</td></tr>
+        <tr><td><span class="method-badge method-post">POST</span></td><td>/Account/RestoreSession</td><td>Validate JWT &amp; reconstitute session</td></tr>
+        <tr><td><span class="method-badge method-get">GET</span></td><td>/Account/GoogleLogin</td><td>Initiate Google OAuth 2.0 redirect</td></tr>
+        <tr><td><span class="method-badge method-get">GET</span></td><td>/auth/google/callback</td><td>Handle OAuth code exchange &amp; profile sync</td></tr>
+        <tr><td><span class="method-badge method-get">GET</span></td><td>/Account/Logout</td><td>Clear session &amp; redirect to login</td></tr>
+      </tbody>
+    </table></div>
+    <h3>Home Endpoints</h3>
+    <div class="table-wrapper"><table>
+      <thead><tr><th>Method</th><th>Endpoint</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><span class="method-badge method-get">GET</span></td><td>/ or /Home/Index</td><td>Main dashboard &mdash; contacts &amp; last messages</td></tr>
+        <tr><td><span class="method-badge method-post">POST</span></td><td>/Home/ToggleFavorite</td><td>Toggle starred status for a contact</td></tr>
+        <tr><td><span class="method-badge method-get">GET</span></td><td>/Home/Updates</td><td>Active 24-hour statuses carousel</td></tr>
+        <tr><td><span class="method-badge method-get">GET</span></td><td>/Home/AddStatus</td><td>Status upload form</td></tr>
+        <tr><td><span class="method-badge method-post">POST</span></td><td>/Home/AddStatus</td><td>Upload image &rarr; Cloudinary &rarr; save status</td></tr>
+        <tr><td><span class="method-badge method-get">GET</span></td><td>/Home/Profile</td><td>Profile and settings management</td></tr>
+        <tr><td><span class="method-badge method-post">POST</span></td><td>/Home/Profile</td><td>Update bio, username, and avatar</td></tr>
+      </tbody>
+    </table></div>
+    <h3>Chat Endpoints</h3>
+    <div class="table-wrapper"><table>
+      <thead><tr><th>Method</th><th>Endpoint</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><span class="method-badge method-get">GET</span></td><td>/Chat/Index?userId={id}</td><td>Open conversation with target user</td></tr>
+        <tr><td><span class="method-badge method-post">POST</span></td><td>/Chat/SendMessage</td><td>Persist message &amp; trigger SignalR broadcast</td></tr>
+        <tr><td><span class="method-badge method-post">POST</span></td><td>/Chat/SendImage</td><td>Upload image attachment &amp; send formatted message</td></tr>
+        <tr><td><span class="method-badge method-post">POST</span></td><td>/Chat/DeleteMessage</td><td>Delete own message (DB + SignalR DOM removal)</td></tr>
+        <tr><td><span class="method-badge method-post">POST</span></td><td>/Chat/ToggleFavorite</td><td>Toggle favorite for active contact</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <!-- SIGNALR -->
+  <section class="section section-anchor fade-in" id="signalr">
+    <h2><span class="h2-icon">&#9889;</span>SignalR Hub Reference</h2>
+    <div class="section-divider"></div>
+    <p>Hub URL: <code>/chatHub</code> &mdash; Authenticate with <code>Authorization: Bearer &lt;token&gt;</code> header or query-string token.</p>
+    <h3>Client &rarr; Server (Invocations)</h3>
+    <div class="table-wrapper"><table>
+      <thead><tr><th>Method</th><th>Arguments</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td>RegisterUser</td><td>int userId</td><td>Register connection; broadcast online status</td></tr>
+        <tr><td>GetOnlineUsers</td><td>&mdash;</td><td>Request list of currently active user IDs</td></tr>
+        <tr><td>SendMessage</td><td>senderId, receiverId, msg, name, msgId</td><td>Broadcast message to all clients</td></tr>
+        <tr><td>DeleteMessage</td><td>messageId, senderId, receiverId</td><td>Broadcast deletion notification</td></tr>
+        <tr><td>CallUser</td><td>callerId, targetUserId, callerName, isVideo</td><td>Initiate WebRTC call request</td></tr>
+        <tr><td>AnswerCall</td><td>callerId, targetUserId, accepted, isVideo</td><td>Accept or decline incoming call</td></tr>
+        <tr><td>SendCallOffer</td><td>senderId, receiverId, sdp</td><td>Exchange SDP offer</td></tr>
+        <tr><td>SendCallAnswer</td><td>senderId, receiverId, sdp</td><td>Exchange SDP answer</td></tr>
+        <tr><td>SendIceCandidate</td><td>senderId, receiverId, candidateJson</td><td>Relay ICE candidates</td></tr>
+        <tr><td>EndCall</td><td>senderId, receiverId</td><td>Terminate call on both peers</td></tr>
+      </tbody>
+    </table></div>
+    <h3>Server &rarr; Client (Events)</h3>
+    <div class="table-wrapper"><table>
+      <thead><tr><th>Event</th><th>Payload</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td>UserStatusChanged</td><td>userId, isOnline</td><td>Update online indicator badge</td></tr>
+        <tr><td>OnlineUsersList</td><td>List&lt;int&gt; userIds</td><td>Deliver initial active user list</td></tr>
+        <tr><td>ReceiveMessage</td><td>senderId, receiverId, message, senderName, time, messageId</td><td>Append new message bubble</td></tr>
+        <tr><td>MessageDeleted</td><td>messageId, senderId, receiverId</td><td>Remove message from DOM</td></tr>
+        <tr><td>IncomingCall</td><td>callerId, targetUserId, callerName, isVideo</td><td>Trigger incoming call dialog</td></tr>
+        <tr><td>CallAnswered</td><td>callerId, targetUserId, accepted, isVideo</td><td>Update initiator call state</td></tr>
+        <tr><td>ReceiveCallOffer</td><td>senderId, receiverId, sdp</td><td>Apply remote SDP offer</td></tr>
+        <tr><td>ReceiveCallAnswer</td><td>senderId, receiverId, sdp</td><td>Apply remote SDP answer</td></tr>
+        <tr><td>ReceiveIceCandidate</td><td>senderId, receiverId, candidateJson</td><td>Add remote ICE candidate</td></tr>
+        <tr><td>CallEnded</td><td>senderId, receiverId</td><td>Reset call modal, stop media tracks</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <!-- CONFIGURATION -->
+  <section class="section section-anchor fade-in" id="configuration">
+    <h2><span class="h2-icon">&#9881;</span>Configuration &amp; Environment Variables</h2>
+    <div class="section-divider"></div>
+    <div class="callout callout-danger">
+      <span class="callout-icon">&#128274;</span>
+      <div class="callout-body">
+        <strong>Never commit secrets</strong>
+        <p>Add <code>.env</code> to <code>.gitignore</code>. Use your hosting platform's secret management for production.</p>
+      </div>
+    </div>
+    <h3>Environment Variables</h3>
+    <div class="env-grid">
+      <div class="env-item"><div><div class="env-key">DATABASE_URL</div><div class="env-desc">PostgreSQL URI: <code>postgresql://user:pass@host:port/dbname?sslmode=require</code></div></div><span class="env-required">REQUIRED</span></div>
+      <div class="env-item"><div><div class="env-key">Cloudinary__CloudName</div><div class="env-desc">Cloudinary cloud name from your dashboard.</div></div><span class="env-required">REQUIRED</span></div>
+      <div class="env-item"><div><div class="env-key">Cloudinary__ApiKey</div><div class="env-desc">Cloudinary API key for upload authentication.</div></div><span class="env-required">REQUIRED</span></div>
+      <div class="env-item"><div><div class="env-key">Cloudinary__ApiSecret</div><div class="env-desc">Cloudinary API secret &mdash; keep private.</div></div><span class="env-required">REQUIRED</span></div>
+      <div class="env-item"><div><div class="env-key">GOOGLE_CLIENT_ID</div><div class="env-desc">OAuth 2.0 Client ID from Google Cloud Console.</div></div><span class="env-optional">OPTIONAL</span></div>
+      <div class="env-item"><div><div class="env-key">GOOGLE_CLIENT_SECRET</div><div class="env-desc">OAuth 2.0 Client Secret from Google Cloud Console.</div></div><span class="env-optional">OPTIONAL</span></div>
+      <div class="env-item"><div><div class="env-key">GOOGLE_REDIRECT_URI</div><div class="env-desc">Registered OAuth callback URL. Must match Google Console exactly.</div></div><span class="env-optional">OPTIONAL</span></div>
+    </div>
+    <h3>appsettings.json</h3>
+    <div class="code-wrapper">
+      <div class="code-header"><span class="code-lang">JSON</span><button class="copy-btn" data-target="code-appsettings">&#8974; Copy</button></div>
+      <pre class="language-json" id="code-appsettings"><code class="language-json">{
+  "ConnectionStrings": { "DefaultConnection": "" },
+  "EmailSettings": {
+    "SmtpHost": "smtp.gmail.com",
+    "SmtpPort": 587,
+    "SenderName": "XenChat",
+    "SenderEmail": "your-email@gmail.com",
+    "SenderPassword": "your-app-password"
+  },
+  "Jwt": { "Key": "XenChat_Secret_Key_For_Jwt_Auth_2026_Min_32_Chars!" },
+  "Logging": {
+    "LogLevel": { "Default": "Information", "Microsoft.AspNetCore": "Warning" }
+  },
+  "AllowedHosts": "*"
+}</code></pre>
+    </div>
+  </section>
+
+  <!-- GETTING STARTED -->
+  <section class="section section-anchor fade-in" id="getting-started">
+    <h2><span class="h2-icon">&#128640;</span>Getting Started (Local Development)</h2>
+    <div class="section-divider"></div>
+    <h3>Prerequisites</h3>
+    <div class="tech-grid">
+      <div class="tech-badge"><span class="dot dot-purple"></span>.NET 8.0 SDK</div>
+      <div class="tech-badge"><span class="dot dot-teal"></span>PostgreSQL (local or Neon)</div>
+      <div class="tech-badge"><span class="dot dot-orange"></span>Cloudinary account (free)</div>
+      <div class="tech-badge"><span class="dot dot-pink"></span>Gmail App Password (SMTP)</div>
+    </div>
+    <h3>Setup Steps</h3>
+    <ol class="step-list">
+      <li>
+        <div>
+          <strong>Clone the repository</strong>
+          <div class="code-wrapper" style="margin-top:8px">
+            <div class="code-header"><span class="code-lang">Bash</span><button class="copy-btn" data-target="code-clone">&#8974; Copy</button></div>
+            <pre class="language-bash" id="code-clone"><code class="language-bash">git clone &lt;repo-url&gt;
+cd XenChat</code></pre>
+          </div>
+        </div>
+      </li>
+      <li>
+        <div>
+          <strong>Create your .env file</strong>
+          <div class="code-wrapper" style="margin-top:8px">
+            <div class="code-header"><span class="code-lang">.env</span><button class="copy-btn" data-target="code-env">&#8974; Copy</button></div>
+            <pre class="language-bash" id="code-env"><code class="language-bash">DATABASE_URL=postgresql://user:pass@host/dbname?sslmode=require
+Cloudinary__CloudName=your-cloud-name
+Cloudinary__ApiKey=your-api-key
+Cloudinary__ApiSecret=your-api-secret</code></pre>
+          </div>
+        </div>
+      </li>
+      <li>
+        <div>
+          <strong>Restore &amp; run</strong>
+          <div class="code-wrapper" style="margin-top:8px">
+            <div class="code-header"><span class="code-lang">Bash</span><button class="copy-btn" data-target="code-run">&#8974; Copy</button></div>
+            <pre class="language-bash" id="code-run"><code class="language-bash">dotnet restore
+dotnet run</code></pre>
+          </div>
+        </div>
+      </li>
+      <li><div><strong>Open in browser</strong><p style="margin-top:4px">Navigate to <code>https://localhost:7197</code> or <code>http://localhost:5248</code></p></div></li>
+    </ol>
+    <div class="callout callout-info">
+      <span class="callout-icon">&#128161;</span>
+      <div class="callout-body">
+        <strong>Auto-Initialization</strong>
+        <p><code>Program.cs</code> auto-creates all tables and seeds default test accounts on first startup. No manual migration commands needed.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- DOCKER -->
+  <section class="section section-anchor fade-in" id="docker">
+    <h2><span class="h2-icon">&#128051;</span>Docker Containerization &amp; Deployment</h2>
+    <div class="section-divider"></div>
+    <p>XenChat ships with an optimized multi-stage <code>Dockerfile</code> targeting port <code>8080</code> &mdash; compatible with Render, Railway, Fly.io, and Azure App Services.</p>
+    <div class="code-wrapper">
+      <div class="code-header"><span class="code-lang">Dockerfile</span><button class="copy-btn" data-target="code-docker">&#8974; Copy</button></div>
+      <pre class="language-docker" id="code-docker"><code class="language-docker"># Build stage
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+COPY ["XenChat.csproj", "./"]
+RUN dotnet restore "XenChat.csproj"
+COPY . .
+RUN dotnet publish "XenChat.csproj" -c Release -o /app/publish /p:UseAppHost=false
+
+# Runtime stage
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
+WORKDIR /app
+COPY --from=build /app/publish .
+ENV ASPNETCORE_HTTP_PORTS=8080
+EXPOSE 8080
+ENTRYPOINT ["dotnet", "XenChat.dll"]</code></pre>
+    </div>
+    <h3>Build &amp; Run</h3>
+    <div class="code-wrapper">
+      <div class="code-header"><span class="code-lang">Bash</span><button class="copy-btn" data-target="code-docker-run">&#8974; Copy</button></div>
+      <pre class="language-bash" id="code-docker-run"><code class="language-bash">docker build -t xenchat:latest .
+
+docker run -d -p 8080:8080 \
+  -e DATABASE_URL="postgresql://user:pass@host/db?sslmode=require" \
+  -e Cloudinary__CloudName="your_cloud_name" \
+  -e Cloudinary__ApiKey="your_api_key" \
+  -e Cloudinary__ApiSecret="your_api_secret" \
+  --name xenchat-app xenchat:latest</code></pre>
+    </div>
+    <h3>Deploy to Render / Railway</h3>
+    <ol class="step-list">
+      <li><div><strong>Connect your repository</strong><p>Link your GitHub repo as a new Web Service.</p></div></li>
+      <li><div><strong>Set build type to Docker</strong><p>The platform auto-detects the <code>Dockerfile</code> in the repo root.</p></div></li>
+      <li><div><strong>Set environment variables</strong><p>Add <code>DATABASE_URL</code>, <code>Cloudinary__CloudName</code>, <code>Cloudinary__ApiKey</code>, <code>Cloudinary__ApiSecret</code> in the dashboard.</p></div></li>
+      <li><div><strong>Deploy</strong><p>Port <code>8080</code> is exposed automatically. App goes live at your assigned subdomain.</p></div></li>
+    </ol>
+    <div class="callout callout-success">
+      <span class="callout-icon">&#127757;</span>
+      <div class="callout-body">
+        <strong>Live Demo</strong>
+        <p>XenChat is deployed at <a href="https://xenchat-i4ek.onrender.com" target="_blank" rel="noopener">xenchat-i4ek.onrender.com</a>. Google OAuth callback pre-configured for this URL.</p>
+      </div>
+    </div>
+  </section>
+
+</main>
+</div>
+
+<button id="back-top" aria-label="Back to top">&#8593;</button>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+<script>
+mermaid.initialize({startOnLoad:true,theme:'dark',themeVariables:{darkMode:true,background:'#13131a',primaryColor:'#23232a',primaryTextColor:'#f4f4f6',primaryBorderColor:'#3a3a4a',lineColor:'#ee4c49',secondaryColor:'#2a2a33',tertiaryColor:'#1e1e26',fontFamily:"Poppins,system-ui,sans-serif"}});
+
+// Mobile sidebar
+const sidebar=document.getElementById('sidebar'),overlay=document.getElementById('sidebar-overlay'),menuBtn=document.getElementById('mobile-menu-btn');
+menuBtn.addEventListener('click',()=>{sidebar.classList.toggle('open');overlay.classList.toggle('open');});
+overlay.addEventListener('click',()=>{sidebar.classList.remove('open');overlay.classList.remove('open');});
+
+// Scroll spy
+const sections=document.querySelectorAll('.section-anchor,.hero');
+const navLinks=document.querySelectorAll('.sidebar-link');
+function updateActiveLink(){let c='';sections.forEach(s=>{if(s.getBoundingClientRect().top<=100)c=s.id;});navLinks.forEach(l=>{l.classList.remove('active');if(l.getAttribute('href')==='#'+c)l.classList.add('active');});}
+navLinks.forEach(l=>l.addEventListener('click',()=>{sidebar.classList.remove('open');overlay.classList.remove('open');}));
+
+// Progress bar
+const bar=document.getElementById('read-progress');
+function updateProgress(){const s=window.scrollY,t=document.documentElement.scrollHeight-window.innerHeight;bar.style.transform='scaleX('+(t>0?s/t:0)+')';}
+
+// Back to top
+const backTop=document.getElementById('back-top');
+function updateBT(){backTop.classList.toggle('visible',window.scrollY>400);}
+backTop.addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));
+
+// Combined scroll handler
+let tick=false;
+window.addEventListener('scroll',()=>{if(!tick){requestAnimationFrame(()=>{updateActiveLink();updateProgress();updateBT();tick=false;});tick=true;}},{passive:true});
+
+// Fade in on scroll
+const fades=document.querySelectorAll('.fade-in');
+const io=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');}),{threshold:0.08,rootMargin:'0px 0px -40px 0px'});
+fades.forEach(el=>{io.observe(el);if(el.getBoundingClientRect().top<window.innerHeight-40)el.classList.add('visible');});
+
+// Copy buttons
+document.querySelectorAll('.copy-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const el=document.getElementById(btn.dataset.target);if(!el)return;
+    const text=el.innerText||el.textContent,orig=btn.innerHTML;
+    const done=()=>{btn.innerHTML='&#10003; Copied!';btn.classList.add('copied');setTimeout(()=>{btn.innerHTML=orig;btn.classList.remove('copied');},2000);};
+    if(navigator.clipboard){navigator.clipboard.writeText(text).then(done).catch(done);}
+    else{const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);done();}
+  });
+});
+
+// Search
+const sInput=document.getElementById('search-input'),sClear=document.getElementById('search-clear'),sOverlay=document.getElementById('search-overlay'),sTitle=document.getElementById('search-results-title'),sList=document.getElementById('search-results-list');
+const idx=[];
+document.querySelectorAll('.main h2,.main h3,.main p,.main td').forEach(el=>{
+  const text=el.textContent.trim();if(text.length<4)return;
+  const sec=el.closest('.section-anchor,.hero'),id=sec?sec.id:'overview';
+  const title=sec?(sec.querySelector('h2')?.textContent.replace(/\s+/g,' ').trim()||id):'Overview';
+  idx.push({text,id,title});
+});
+function hl(t,q){return t.replace(new RegExp('('+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi'),'<mark>$1</mark>');}
+function doSearch(q){
+  q=q.trim();if(!q){sOverlay.classList.remove('visible');sClear.style.display='none';return;}
+  sClear.style.display='block';sOverlay.classList.add('visible');
+  const ql=q.toLowerCase(),seen=new Set(),matches=[];
+  idx.forEach(item=>{if(item.text.toLowerCase().includes(ql)&&!seen.has(item.id)){seen.add(item.id);matches.push(item);}});
+  if(!matches.length){sTitle.textContent='No results for "'+q+'"';sList.innerHTML='<p style="color:var(--text-muted);font-size:.85rem">Try: "SignalR","Docker","OTP","JWT".</p>';return;}
+  sTitle.textContent=matches.length+' result'+(matches.length!==1?'s':'')+' for "'+q+'"';
+  sList.innerHTML=matches.map(m=>'<div class="search-result-item" data-id="'+m.id+'"><h4>'+hl(m.title,q)+'</h4><p>'+hl(m.text.length>120?m.text.slice(0,120)+'...':m.text,q)+'</p></div>').join('');
+  sList.querySelectorAll('.search-result-item').forEach(item=>{
+    item.addEventListener('click',()=>{sInput.value='';sOverlay.classList.remove('visible');sClear.style.display='none';const t=document.getElementById(item.dataset.id);if(t)t.scrollIntoView({behavior:'smooth',block:'start'});});
+  });
+}
+let st;sInput.addEventListener('input',e=>{clearTimeout(st);st=setTimeout(()=>doSearch(e.target.value),220);});
+sClear.addEventListener('click',()=>{sInput.value='';sOverlay.classList.remove('visible');sClear.style.display='none';sInput.focus();});
+document.addEventListener('keydown',e=>{
+  if((e.ctrlKey||e.metaKey)&&e.key==='k'){e.preventDefault();sInput.focus();sInput.select();}
+  if(e.key==='Escape'&&sOverlay.classList.contains('visible')){sInput.value='';sOverlay.classList.remove('visible');sClear.style.display='none';}
+});
+
+updateActiveLink();updateProgress();
+</script>
+</body>
+</html>
